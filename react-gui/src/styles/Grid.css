@@ -1,0 +1,8 @@
+/* Grid.css */
+.grid-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px; /* Adjust the gap between grid items */
+  padding: 16px;
+  justify-content: center;
+}

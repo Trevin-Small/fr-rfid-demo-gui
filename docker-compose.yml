@@ -1,0 +1,64 @@
+version: '3.8'
+services:
+  mqtt-broker:     
+    image: eclipse-mosquitto     
+    container_name: mqtt-broker     
+    ports:       
+      - "1883:1883"       
+      - "9001:9001"     
+    volumes:       
+      - ./config:/mosquitto/config:rw       
+      - ./data:/mosquitto/data:rw       
+      - ./log:/mosquitto/log:rw     
+    restart: unless-stopped    
+  
+  mqtt-subscriber:     
+    container_name: mqtt-subscriber     
+    build: ./mqtt-subscriber     
+    volumes:
+      - ./mqtt-subscriber/log:/mqtt-sub/log:rw           
+    restart: unless-stopped     
+    environment:       
+      - PYTHONUNBUFFERED=1    
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      - redis
+      - mqtt-broker
+
+  redis:     
+    container_name: redis
+    hostname: redis
+    image: redis       
+    ports:       
+      - "6379:6379"
+   
+  http-server:
+    container_name: http-server
+    image: node
+    build: ./http-server
+    volumes:
+      - ./:/http-server
+    ports:
+      - "8000:8000"
+    depends_on:
+      - redis
+    restart: unless-stopped
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+
+  #server-test:
+  #container_name: server-test
+  #build: ./server-test
+  #restart: unless-stopped
+  #environment:
+  #   - PYTHONUNBUFFERED=1
+  # depends_on:
+  #   - http-server
+
+volumes:   
+  config:   
+  data:   
+  log:   
+  redis_data:
