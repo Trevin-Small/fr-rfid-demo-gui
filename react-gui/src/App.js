@@ -26,7 +26,7 @@ const App = (() => {
 
   useEffect(() => {
     const fetchQuantities = async () => {
-      const response = await axios.get('http://trevinsmall@raspberrypi.meshsystems.com:8000/inventory');
+      const response = await axios.get('http://localhost:8000/inventory');
       setQuantities(response.data.inventory);
     };
     fetchQuantities();

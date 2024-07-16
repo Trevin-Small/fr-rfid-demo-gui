@@ -1,5 +1,6 @@
 const fs = require('fs');
 const redis = require('redis');
+const ntp = require('ntp-client');
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
@@ -44,11 +45,10 @@ const empty_inventory = {
   "total": 0
 };
 
-const EXPIRATION_THRESHOLD = 10;
-const FREQ_COEF = 2;
-const FREQ_EXP = 1.7;
-const FREQ_CONST = 1;
-const TIMESTAMP_MEMORY = 4;
+const FREQ_COEF = 1.5;
+const FREQ_EXP = 1.4;
+const EXPIRATION_CONST = 7;
+const READ_COUNT_NUMERATOR = 3;
 
 // Server test route - return data under key 'hello'
 app.get('/server-test', async (req, res) => {
@@ -57,45 +57,58 @@ app.get('/server-test', async (req, res) => {
 });
 
 app.get('/inventory', async (req, res) => {
-  // Make deep copy of empty_inventory object
-  const inventory = { ...empty_inventory };
 
-  const curr_time = Math.floor(Date.now() / 1000);
-  let total_inventory = 0;
-
-  console.log("\n\nExpired tags:");
-
-  // Iterate through tag list
-  for (let i in tag_list.tags) {
-    let tag_id = String(tag_list.tags[i]);
-
-    // Get tag event from redis, parse into json
-    let tag_data = await redisClient.get(tag_id);
-
-    //console.log("/inventory", tag_id, tag_event);
-
-    // If no data exists for this tag id, continue
-    if (!tag_data) continue;
-
-    tag_data = JSON.parse(tag_data);
-
-    let freq = get_read_freq(tag_data);
-
-    console.log(tag_id, " exp data: ", curr_time - tag_data.timestamps.slice(-1)[0], freq, Math.pow(freq, FREQ_EXP) + FREQ_CONST);
-
-    // If it has been less than average_read_freq * FREQ_COEF time since seeing tag, it is in stock
-    if (curr_time - tag_data.timestamps.slice(-1)[0] < Math.pow(freq, FREQ_EXP) + FREQ_CONST) {
-      inventory[tag_data.flavor]++;
-      total_inventory++;
-    } else {
-      console.log(tag_id + " Expired!");
+  ntp.getNetworkTime("pool.ntp.org", 123, async (err, date) => {
+    if (err) {
+      console.log("ntp time error: ", err);
+      return err;
     }
-  }
 
-  inventory.total = total_inventory;
+    let curr_time = (date.getTime() / 1000);
 
-  // Return status 200 with new_inventory state
-  res.status(200).json({ inventory });
+    console.log("\ncurrent time: ", curr_time);
+
+    // Make deep copy of empty_inventory object
+    const inventory = { ...empty_inventory };
+    let total_inventory = 0;
+
+    console.log("Expired tags:");
+
+    // Iterate through tag list
+    for (let i in tag_list.tags) {
+      let tag_id = String(tag_list.tags[i]);
+
+      // Get tag event from redis, parse into json
+      let tag_data = await redisClient.get(tag_id);
+
+      // If no data exists for this tag id, continue
+      if (!tag_data) continue;
+
+      tag_data = JSON.parse(tag_data);
+
+      let freq = get_read_freq(tag_data);
+      let avg_reads = get_avg_reads(tag_data);
+      let expiration_time = Math.pow(freq, FREQ_EXP) + (READ_COUNT_NUMERATOR / avg_reads) + EXPIRATION_CONST;
+
+      let time_diff = (curr_time - tag_data.timestamps.slice(-1)[0]);
+
+      console.log(tag_id, " exp data: ", freq, expiration_time - time_diff);
+
+      // If it has been less than average_read_freq * FREQ_COEF time since seeing tag, it is in stock
+      if (time_diff < expiration_time) {
+        inventory[tag_data.flavor]++;
+        total_inventory++;
+      } else {
+      // console.log(tag_id + " Expired!");
+      }
+    }
+
+    inventory.total = total_inventory;
+
+    // Return status 200 with new_inventory state
+    res.status(200).json({ inventory });
+
+  });
 });
 
 
@@ -105,7 +118,18 @@ app.listen(8000, () => {
 });
 
 function get_read_freq(tag_data) {
+	if (tag_data.timestamps.length < 2) return 9999999999;
 	let range = (tag_data.timestamps.slice(-1)[0] - tag_data.timestamps[0]);
 	let read_freq = range / (tag_data.timestamps.length - 1);
 	return read_freq;
+}
+
+function get_avg_reads(tag_data) {
+	console.log(tag_data.read_arr);
+	if (tag_data.read_arr.length == 1) return tag_data.read_arr[0];
+	let total = 0;
+	for (let read in tag_data.read_arr) {
+		total += read;
+	}
+	return total / tag_data.read_arr.length;
 }

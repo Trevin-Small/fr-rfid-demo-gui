@@ -48,6 +48,18 @@ services:
       - REDIS_HOST=redis
       - REDIS_PORT=6379
 
+  #react-gui:
+  #  container_name: react-gui
+  #  image: node
+  #  build: ./react-gui
+  #  volumes:
+  #    - ./:/react-gui
+  #  ports:
+  #    - "3000:3000"
+  #  depends_on:
+  #    - http-server
+  #  restart: unless-stopped
+
   #server-test:
   #container_name: server-test
   #build: ./server-test

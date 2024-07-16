@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 
 function dataItem(number, id, time_diff, avg_freq, expiration_time, expired) {
     return  <div className={"w-full h-auto flex flex-row justify-between items-center border-black border "
-                + (expired == "Yes" ? " bg-red-400" : "")}>
+                + (expired === "Yes" ? " bg-red-400" : "")}>
                 <p className="w-1/6 text-center text-md font-semibold">{number}</p>
                 <p className="w-1/6 text-center text-md font-semibold">{id}</p>
                 <p className="w-1/6 text-center text-md font-semibold">{time_diff < 100000000000 ? time_diff : "Hasn't been read"}</p>
