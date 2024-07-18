@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import Header from "./Header";
 import GridContainer from "./GridContainer";
 
-const UPDATE_INTERVAL = 3000;
+const UPDATE_INTERVAL = 1500;
 
 const Products = [
   {name:"Snickers", id:"snickers", src:"./assets/snickers.png", quantity:2},
