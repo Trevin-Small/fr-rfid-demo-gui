@@ -46,7 +46,7 @@ const empty_inventory = {
 };
 
 const FREQ_COEF = 1.5;
-const FREQ_EXP = 1.4;
+const FREQ_EXP = 1.5;
 const EXPIRATION_CONST = 6;
 const READ_COUNT_NUMERATOR = 3;
 const DEFAULT_FREQ = 30;

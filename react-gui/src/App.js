@@ -24,7 +24,6 @@ const App = (() => {
   const [quantities, setQuantities] = useState({});
   const [cupTotal, setTotal] = useState(0);
 
-
   useEffect(() => {
     const fetchQuantities = async () => {
       const response = await axios.get('http://localhost:8000/inventory');
@@ -35,9 +34,9 @@ const App = (() => {
   }, []);
 
   useEffect(() => {
-    const newProducts = products;
+    const newProducts = [...products];
 
-    for (let i = 0; i < products.length; i++) {
+    for (let i = 0; i < newProducts.length; i++) {
       let q = quantities[Products[i].id];
       newProducts[i].quantity = q;
     }

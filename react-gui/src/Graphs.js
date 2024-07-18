@@ -14,19 +14,13 @@ import {
 } from 'chart.js';
 import Header from './Header';
 import Dropdown from './Dropdown';
-//import 'chartjs-adapter-date-fns';
-//import {de, se} from 'date-fns/locale';
-//import { max } from 'date-fns';
 
 ChartJS.register(LineElement, PointElement, TimeScale, LinearScale, CategoryScale, Tooltip, Legend, Decimation);
 
 const UPDATE_INTERVAL = 2000;
 const MAX_LENGTH = 100000000;
-let minTime = Date.now();
 
 const GRAPH_OPTIONS = {
-  //parsing: false,
-  //indexAxis: 'x',
   animation: false,
   plugins: {
     title: {
@@ -35,18 +29,9 @@ const GRAPH_OPTIONS = {
     legend: {
       display: false
     },
-    /*decimation: {
-      enabled: false,
-      algorithm: 'lttb',
-      samples: 20
-    }*/
   },
   scales: {
     x: {
-      //min: minTime,
-      // time: {
-      //   unit: 'second',
-      // },
       ticks: {
         maxRotation: 20,
         maxTicksLimit: 15,
@@ -58,8 +43,6 @@ const GRAPH_OPTIONS = {
     },
     y: {
       type: 'linear',
-      //min: 0,
-      //max: 200,
       beginAtZero: true,
       ticks: {
         color: 'black',
@@ -137,7 +120,6 @@ const Graphs = (() => {
     }
 
     if (newActiveData.labels.length > 0) {
-      //minTime = newActiveData.datasets[0].data[0].x;
       let newCurrentTotal = newActiveData.datasets[0].data[newActiveData.datasets[0].data.length - 1];
       setCurrentTotal(newCurrentTotal);
     }
