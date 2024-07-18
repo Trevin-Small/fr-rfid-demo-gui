@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { useEffect, useState } from "react";
+import Header from "./Header";
 import GridContainer from "./GridContainer";
 
 const UPDATE_INTERVAL = 3000;
@@ -46,11 +47,8 @@ const App = (() => {
   }, [quantities]);
 
   return (
-    <div className="App w-full h-auto overflow-x-hidden flex flex-col justify-start items-center" style={{backgroundColor:"#f6f6f6"}}>
-      <header className="w-full h-20 flex flex-row justify-start items-center" style={{backgroundColor:"#bfe8fd"}}>
-        <img src="./assets/logo.png" className="w-auto h-3/4 mx-2" alt="logo" />
-        <p className="w-full absolute text-center text-4xl font-bold mb-2">Store Inventory</p>
-      </header>
+    <div className="App w-full h-screen overflow-x-hidden flex flex-col justify-start items-center" style={{backgroundColor:"#f6f6f6"}}>
+      <Header title={"Store Inventory"} />
       <p className="w-full text-center text-xl font-semibold mt-3">Total in Stock: {cupTotal}</p>
       <GridContainer itemData={products}/>
     </div>
