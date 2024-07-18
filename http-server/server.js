@@ -49,6 +49,7 @@ const FREQ_COEF = 1.5;
 const FREQ_EXP = 1.4;
 const EXPIRATION_CONST = 7;
 const READ_COUNT_NUMERATOR = 3;
+const DEFAULT_FREQ = 30;
 
 // Server test route - return data under key 'hello'
 app.get('/server-test', async (req, res) => {
@@ -118,7 +119,7 @@ app.listen(8000, () => {
 });
 
 function get_read_freq(tag_data) {
-	if (tag_data.timestamps.length < 2) return 9999999999;
+	if (tag_data.timestamps.length < 2) return DEFAULT_FREQ;
 	let range = (tag_data.timestamps.slice(-1)[0] - tag_data.timestamps[0]);
 	let read_freq = range / (tag_data.timestamps.length - 1);
 	return read_freq;
