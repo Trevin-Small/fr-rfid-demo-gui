@@ -7,7 +7,7 @@ docker compose up --force-recreate -d
 cd react-gui
 
 # Start the React development server 
-npm run start &  
+BROWSER=none npm run start &  
 
 # Get the process ID of the npm command 
 NPM_PID=$!  
