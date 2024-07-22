@@ -31,6 +31,7 @@ const tag_list = JSON.parse(fs.readFileSync('tag_list.json', 'utf8'));
 
 // Initial inventory state
 const empty_inventory = {
+  "timestamp": 0,
   "snickers": 0,
   "acai": 0, 
   "chocolate": 0,
@@ -45,19 +46,17 @@ const empty_inventory = {
   "total": 0
 };
 
-const FREQ_EXP = 1.45;
+const FREQ_EXP = 1.525;
 const EXPIRATION_CONST = 6;
 const READ_COUNT_NUMERATOR = 3;
 const DEFAULT_FREQ = 30;
 
-// Server test route - return data under key 'hello'
-app.get('/server-test', async (req, res) => {
-	let data = await redisClient.get('hello');
-	res.status(200).json({ data });
-});
+// Duration of time in minutes to preserve inventory data (for graphing purposes)
+const INVENTORY_ARRAY_SIZE = 10;
+const UPDATE_RATE = 2000;
+let inventoryArray = [];
 
-app.get('/inventory', async (req, res) => {
-
+function updateInventory()  {
   ntp.getNetworkTime("pool.ntp.org", 123, async (err, date) => {
     if (err) {
       console.log("ntp time error: ", err);
@@ -98,19 +97,34 @@ app.get('/inventory', async (req, res) => {
       if (time_diff < expiration_time) {
         inventory[tag_data.flavor]++;
         total_inventory++;
-      } else {
-      // console.log(tag_id + " Expired!");
       }
     }
 
     inventory.total = total_inventory;
+    inventory.timestamp = Date.now();
 
-    // Return status 200 with new_inventory state
-    res.status(200).json({ inventory });
+    inventoryArray.push(inventory);
 
+    if (inventoryArray.length > MINS_TO_MILLIS(INVENTORY_ARRAY_SIZE) / UPDATE_RATE) {
+      inventoryArray.shift();
+    }
+  
   });
+}
+
+function MINS_TO_MILLIS() {
+  return 60000 * INVENTORY_ARRAY_SIZE;
+}
+
+setInterval(updateInventory, UPDATE_RATE);
+
+app.get('/inventory', async (req, res) => {
+  res.status(200).json(inventoryArray[inventoryArray.length - 1]);
 });
 
+app.get('/inventory-history', async (req, res) => {
+  res.status(200).json(inventoryArray);
+});
 
 // Start the server
 app.listen(8000, () => {

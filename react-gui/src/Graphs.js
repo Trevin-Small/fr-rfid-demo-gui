@@ -18,7 +18,6 @@ import Dropdown from './Dropdown';
 ChartJS.register(LineElement, PointElement, TimeScale, LinearScale, CategoryScale, Tooltip, Legend, Decimation);
 
 const UPDATE_INTERVAL = 2000;
-const MAX_LENGTH = 100000000;
 
 const GRAPH_OPTIONS = {
   animation: false,
@@ -92,16 +91,8 @@ const Graphs = (() => {
 
   useEffect(() => {
     const fetchData = async () => {
-      const response = await axios.get('http://localhost:8000/inventory');
-      let sample = response.data;
-      sample.timestamp = Date.now();
-      setInventoryData(prevInventoryData => {
-        let newInventoryData = [...prevInventoryData, sample];
-        if (newInventoryData.length > MAX_LENGTH) {
-          newInventoryData.shift();
-        }
-        return newInventoryData;
-      });
+      const response = await axios.get('http://localhost:8000/inventory-history');
+      setInventoryData(response.data);
     };
 
     fetchData();
@@ -114,9 +105,10 @@ const Graphs = (() => {
 
     for (let i in inventoryData) {
       let entry = inventoryData[i];
+      console.log(entry);
       //console.log("inv " + i + " Time: " + (new Date(entry.timestamp)).toLocaleTimeString().split(' ')[0]);
       newActiveData.labels.push((new Date(entry.timestamp)).toLocaleTimeString().split(' ')[0]);
-      newActiveData.datasets[0].data.push(entry.inventory[sortBy[1]]);
+      newActiveData.datasets[0].data.push(entry[sortBy[1]]);
     }
 
     if (newActiveData.labels.length > 0) {

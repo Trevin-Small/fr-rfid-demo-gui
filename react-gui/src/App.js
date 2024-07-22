@@ -27,7 +27,7 @@ const App = (() => {
   useEffect(() => {
     const fetchQuantities = async () => {
       const response = await axios.get('http://localhost:8000/inventory');
-      setQuantities(response.data.inventory);
+      setQuantities(response.data);
     };
     fetchQuantities();
     setInterval(fetchQuantities, UPDATE_INTERVAL);
