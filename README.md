@@ -20,3 +20,6 @@ Also note the script depends on the location of the chromium binary since it was
 
 # server-test
 leftover container used to make sure things were behaving properly. its not used for anything anymore
+
+# dhcpcd
+config file used to set the static ip on the tinker board.
