@@ -13,9 +13,9 @@ Not sure what the issue was, may have had a libary somewhere that wasn't compati
 Anyways, running the react server locally compiles the react project and launches a server on localhost:3000 to view the page.
 
 # Running
-run ```docker compose build```
-followed by ```./start.sh```
-The start script launches the containers, then the local react server, and finally launches chromium in kiosk mode bringing up the react page. 
+run ```docker compose build```  
+followed by ```./start.sh```  
+The start script launches the containers, then the local react server, and finally launches chromium in kiosk mode bringing up the react page.  
 Also note the script depends on the location of the chromium binary since it was made to run on a tinker board.
 
 # server-test
