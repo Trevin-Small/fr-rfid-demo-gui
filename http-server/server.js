@@ -46,6 +46,24 @@ const empty_inventory = {
   "total": 0
 };
 
+/*
+ * Tag "expiration time" refers to the amount of time which a tag goes without being read to be considered "not in the freezer".
+ * Since tag read rate depends heavily upon location in the freezer, expiration time needs to be calculated as a function of observed read rate.
+ * The redis db will store the last N many read events of the tag, allowing you to calculate how often you see the tag on average.
+ * 
+ * Currently, the expiration function goes this way:
+ * freq = get_read_freq(tag_data); // calculate average amount of time between read events (i.e. value of 3 means 3 seconds on average between received events)
+ *
+ * expiration_time =  Math.pow(freq, FREQ_EXP) + (READ_COUNT_NUMERATOR / avg_reads) + EXPIRATION_CONST;
+ *
+ * The average frequency is raised to an exponent. found to work better than scaled with a coefficient. 
+ * Further, (READ_COUNT_NUMERATOR / avg_reads) gives an additional time bias for tags that don't read frequently, since it increases as avg_reads decreases.
+ *
+ * EXPIRATION_CONST is added as an offset to give high-frequency tags some buffer time. 
+ * Curruently it is 6 because the reader time seems to be about 5 seconds behind server time no matter what I do (tried using ntp time to combat this, didnt fix it)
+ *
+ * DEFAULT_FREQ is the default frequency if tag has only been read once.
+ */
 const FREQ_EXP = 1.525;
 const EXPIRATION_CONST = 6;
 const READ_COUNT_NUMERATOR = 3;
@@ -53,10 +71,13 @@ const DEFAULT_FREQ = 30;
 
 // Duration of time in minutes to preserve inventory data (for graphing purposes)
 const INVENTORY_ARRAY_SIZE = 10;
+
+// Rate in milliseconds to update the inventory
 const UPDATE_RATE = 2000;
 let inventoryArray = [];
 
 function updateInventory()  {
+  // Get ntp time 
   ntp.getNetworkTime("pool.ntp.org", 123, async (err, date) => {
     if (err) {
       console.log("ntp time error: ", err);
@@ -116,12 +137,15 @@ function MINS_TO_MILLIS() {
   return 60000 * INVENTORY_ARRAY_SIZE;
 }
 
+// Call update inventory every UPDATE_RATE milliseconds
 setInterval(updateInventory, UPDATE_RATE);
 
+// URL/inventory route, serves the most recent inventory information.
 app.get('/inventory', async (req, res) => {
   res.status(200).json(inventoryArray[inventoryArray.length - 1]);
 });
 
+// URL/inventory-history route, serves the last INVENTORY_ARRAY_SIZE minutes of inventory information. Used for graphing inventory over time.
 app.get('/inventory-history', async (req, res) => {
   res.status(200).json(inventoryArray);
 });
@@ -131,6 +155,7 @@ app.listen(8000, () => {
   console.log(`Server is running on port 8000`);
 });
 
+// Calculate number of seconds between tag read events on average
 function get_read_freq(tag_data) {
 	if (tag_data.timestamps.length < 2) return DEFAULT_FREQ;
 	let range = (tag_data.timestamps.slice(-1)[0] - tag_data.timestamps[0]);
@@ -138,6 +163,7 @@ function get_read_freq(tag_data) {
 	return read_freq;
 }
 
+// Calcualte average tag reads per event (tag metadata includes read count, which can be greater than 1 in an event)
 function get_avg_reads(tag_data) {
 	console.log(tag_data.read_arr);
 	if (tag_data.read_arr.length == 1) return tag_data.read_arr[0];
