@@ -19,7 +19,7 @@ The start script launches the containers, then the local react server, and final
 Also note the script depends on the location of the chromium binary since it was made to run on a tinker board.
 
 # server-test
-leftover container used to make sure things were behaving properly. its not used for anything anymore
+leftover test used to make sure things were behaving properly. its not used for anything anymore
 
 # dhcpcd.conf
-config file used to set the static ip on the tinker board.
+config file used to set the static ip on the tinker board that the zebra reader publishes mqtt messages to
