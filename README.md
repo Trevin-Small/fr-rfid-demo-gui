@@ -3,7 +3,7 @@ Inventory GUI for f'real onsite visit
 
 # Overview
 docker compose is used to manage the following containers:
-- mqtt-broker: runs a mosquitto mqtt broker. This is the endpoint that the zebra reader sends tag read events to
+- mqtt-broker: runs a mosquitto mqtt broker. This is the endpoint that the zebra reader publishes tag read events to
 - mqtt-subscriber: python script that subscribes to tag read events. whenever one is received, it writes it into the redis database
 - redis: datastore used for storing tag reads
 - http-server: an Express.js server to provide inventory data to the user interface. reads from the redis DB, and provides inventory as a json response to an HTTP request. Runs on localhost:8000
