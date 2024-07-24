@@ -17,6 +17,8 @@ run ```docker compose build```
 followed by ```./start.sh```  
 The start script launches the containers, then the local react server, and finally launches chromium in kiosk mode bringing up the react page.  
 Also note the script depends on the location of the chromium binary since it was made to run on a tinker board.
+Login to Zebra reader web page, go to Zebra IoT connection -> click connect, wait for it to begin
+Inventory will begin updating!
 
 # server-test
 leftover test used to make sure things were behaving properly. its not used for anything anymore
